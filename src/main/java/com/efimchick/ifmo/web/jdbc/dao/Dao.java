@@ -8,7 +8,7 @@ public interface Dao<T, Id> {
 
     Optional<T> getById(Id Id);
 
-    List<T> getAll() throws SQLException;
+    List<T> getAll();
 
     T save(T t);
 

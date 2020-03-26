@@ -1,6 +1,6 @@
 package com.efimchick.ifmo.web.jdbc.dao;
 
-import java.sql.SQLException;
+
 import java.util.List;
 import java.util.Optional;
 

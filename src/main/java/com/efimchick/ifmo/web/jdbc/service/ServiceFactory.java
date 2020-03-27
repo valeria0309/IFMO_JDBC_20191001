@@ -16,9 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceFactory {
-    public EmployeeService employeeService(){
-
-    public ResultSet getResultSet(String SQLString) throws SQLException {
+        private ResultSet getResultSet(String SQLString) throws SQLException {
         try {
             Connection connection = ConnectionSource.instance().createConnection();
             return connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE).executeQuery(SQLString);

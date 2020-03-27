@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceFactory {
+    public EmployeeService employeeService(){
 
     public ResultSet getResultSet(String SQLString) throws SQLException {
         try {

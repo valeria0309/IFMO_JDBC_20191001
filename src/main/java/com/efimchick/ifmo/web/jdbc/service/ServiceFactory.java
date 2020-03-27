@@ -17,7 +17,7 @@ import java.util.List;
 
 public class ServiceFactory {
 
-    private ResultSet getResultSet(String SQLString) throws SQLException {
+    public ResultSet getResultSet(String SQLString) throws SQLException {
         try {
             Connection connection = ConnectionSource.instance().createConnection();
             return connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE).executeQuery(SQLString);
@@ -28,7 +28,7 @@ public class ServiceFactory {
 
 
 
-    private Employee getEmployeeWithChain(ResultSet resultSet, boolean chain, boolean isManagerNeeds) throws SQLException {
+    public Employee getEmployeeWithChain(ResultSet resultSet, boolean chain, boolean isManagerNeeds) throws SQLException {
         Employee manager = null;
 
         if (resultSet.getObject("manager") != null) {
@@ -70,7 +70,7 @@ public class ServiceFactory {
                 department
         );
     }
-    private List<Employee> getSortedEmployees(boolean chain, boolean isManagerNeeds, String SQLString) {
+    public List<Employee> getSortedEmployees(boolean chain, boolean isManagerNeeds, String SQLString) {
         List<Employee> employeeList = new ArrayList<>();
         try {
             ResultSet resultSet = getResultSet(SQLString);
@@ -86,7 +86,7 @@ public class ServiceFactory {
         }
     }
 
-    private Department getDepartmentById(BigInteger id) {
+    public Department getDepartmentById(BigInteger id) {
         try {
             Department department = null;
             ResultSet resultSet = getResultSet("SELECT * FROM DEPARTMENT WHERE ID =" + id);
@@ -99,7 +99,7 @@ public class ServiceFactory {
         }
     }
 
-    private Department getDepartment(ResultSet resultSet) throws  SQLException {
+    public Department getDepartment(ResultSet resultSet) throws  SQLException {
         BigInteger id = new BigInteger(resultSet.getString("ID"));
         String name = resultSet.getString("NAME");
         String location = resultSet.getString("LOCATION");
@@ -107,7 +107,7 @@ public class ServiceFactory {
         return new Department(id, name, location);
     }
 
-    private List<Employee> getRequestedPage(Paging paging, String SQLString) {
+   public List<Employee> getRequestedPage(Paging paging, String SQLString) {
         List<Employee> employeeList = getSortedEmployees(false, true, SQLString);
         return employeeList.subList(Math.max((paging.page - 1) * paging.itemPerPage, 0),
                 Math.min((paging.page) * paging.itemPerPage,

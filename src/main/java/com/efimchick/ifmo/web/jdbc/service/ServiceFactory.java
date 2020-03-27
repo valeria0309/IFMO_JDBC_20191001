@@ -16,102 +16,102 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceFactory {
-        private ResultSet getResultSet(String SQLString) throws SQLException {
-        try {
-            Connection connection = ConnectionSource.instance().createConnection();
-            return connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE).executeQuery(SQLString);
-        } catch (SQLException e) {
-            return null;
-        }
-    }
 
+     private ResultSet getResultSet(String SQLString) throws SQLException {
+         try {
+             Connection connection = ConnectionSource.instance().createConnection();
+             return connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE).executeQuery(SQLString);
+         } catch (SQLException e) {
+             return null;
+         }
+     }
 
+     public List<Employee> getSortedEmployees(boolean chain, boolean isManagerNeeds, String SQLString) {
+         List<Employee> employeeList = new ArrayList<>();
+         try {
+             ResultSet resultSet = getResultSet(SQLString);
 
-    public Employee getEmployeeWithChain(ResultSet resultSet, boolean chain, boolean isManagerNeeds) throws SQLException {
-        Employee manager = null;
+             while (resultSet.next()) {
+                 Employee employee = getEmployeeWithChain(resultSet, chain, isManagerNeeds);
+                 employeeList.add(employee);
+             }
+             return employeeList;
 
-        if (resultSet.getObject("manager") != null) {
-            if (chain || isManagerNeeds) {
-                BigInteger managerId = new BigInteger(resultSet.getString("manager"));
+         } catch (SQLException e) {
+             return null;
+         }
+     }
 
-                if (chain) {
-                    manager = getSortedEmployees(
-                            true,
-                            false,
-                            "SELECT * FROM employee WHERE id = " + managerId).get(0);
-                } else {
-                    manager = getSortedEmployees(false,
-                            false,
-                            "SELECT * FROM employee WHERE id = " + managerId).get(0);
-                }
-            }
-        }
+     public Employee getEmployeeWithChain(ResultSet resultSet, boolean chain, boolean isManagerNeeds) throws SQLException {
+         Employee manager = null;
 
-        Department department = null;
+         if (resultSet.getObject("MANAGER") != null) {
+             if (chain || isManagerNeeds) {
+                 BigInteger managerId = new BigInteger(resultSet.getString("MANAGER"));
+                 String SQLStatement = "SELECT * FROM EMPLOYEE WHERE ID = " + managerId;
 
-        if (resultSet.getObject("department") != null) {
-            BigInteger departmentId = BigInteger.valueOf(resultSet.getInt("department"));
-            department = getDepartmentById(departmentId);
-        }
+                 if (chain) {
+                     manager = getSortedEmployees(
+                             true,
+                             false,
+                             SQLStatement).get(0);
+                 } else {
+                     manager = getSortedEmployees(false,
+                             false,
+                             SQLStatement).get(0);
+                 }
+             }
+         }
 
-        return new Employee(
-                new BigInteger(resultSet.getString("id")),
-                new FullName(
+         Department department = null;
 
-                        resultSet.getString("lastname"),
-                        resultSet.getString("firstname"),
-                        resultSet.getString("middlename")
-                ),
-                Position.valueOf(resultSet.getString("position")),
-                LocalDate.parse(resultSet.getString("hi")),
-                new BigDecimal(resultSet.getString("SALARY")),
-                manager,
-                department
-        );
-    }
-    public List<Employee> getSortedEmployees(boolean chain, boolean isManagerNeeds, String SQLString) {
-        List<Employee> employeeList = new ArrayList<>();
-        try {
-            ResultSet resultSet = getResultSet(SQLString);
+         if (resultSet.getObject("DEPARTMENT") != null) {
+             BigInteger departmentId = BigInteger.valueOf(resultSet.getInt("DEPARTMENT"));
+             department = getDepartmentById(departmentId);
+         }
 
-            while (resultSet.next()) {
-                Employee employee = getEmployeeWithChain(resultSet, chain, isManagerNeeds);
-                employeeList.add(employee);
-            }
-            return employeeList;
+         return new Employee(
+                 new BigInteger(resultSet.getString("ID")),
+                 new FullName(
+                         resultSet.getString("FIRSTNAME"),
+                         resultSet.getString("LASTNAME"),
+                         resultSet.getString("MIDDLENAME")
+                 ),
+                 Position.valueOf(resultSet.getString("POSITION")),
+                 LocalDate.parse(resultSet.getString("HIREDATE")),
+                 new BigDecimal(resultSet.getString("SALARY")),
+                 manager,
+                 department
+         );
+     }
 
-        } catch (SQLException e) {
-            return null;
-        }
-    }
+     public Department getDepartmentById(BigInteger id) {
+         try {
+             Department department = null;
+             ResultSet resultSet = getResultSet("SELECT * FROM DEPARTMENT WHERE ID =" + id);
+             while (resultSet.next()) {
+                 department = getDepartment(resultSet);
+             }
+             return department;
+         } catch (SQLException e) {
+             return null;
+         }
+     }
 
-    public Department getDepartmentById(BigInteger id) {
-        try {
-            Department department = null;
-            ResultSet resultSet = getResultSet("SELECT * FROM DEPARTMENT WHERE ID =" + id);
-            while (resultSet.next()) {
-                department = getDepartment(resultSet);
-            }
-            return department;
-        } catch (SQLException e) {
-            return null;
-        }
-    }
+     public Department getDepartment(ResultSet resultSet) throws  SQLException {
+         BigInteger id = new BigInteger(resultSet.getString("ID"));
+         String name = resultSet.getString("NAME");
+         String location = resultSet.getString("LOCATION");
 
-    public Department getDepartment(ResultSet resultSet) throws  SQLException {
-        BigInteger id = new BigInteger(resultSet.getString("ID"));
-        String name = resultSet.getString("NAME");
-        String location = resultSet.getString("LOCATION");
+         return new Department(id, name, location);
+     }
 
-        return new Department(id, name, location);
-    }
-
-   public List<Employee> getRequestedPage(Paging paging, String SQLString) {
-        List<Employee> employeeList = getSortedEmployees(false, true, SQLString);
-        return employeeList.subList(Math.max((paging.page - 1) * paging.itemPerPage, 0),
-                Math.min((paging.page) * paging.itemPerPage,
-                        employeeList.size()));
-    }
+     public List<Employee> getRequestedPage(Paging paging, String SQLString) {
+         List<Employee> employeeList = getSortedEmployees(false, true, SQLString);
+         return employeeList.subList(Math.max((paging.page - 1) * paging.itemPerPage, 0),
+                                     Math.min((paging.page) * paging.itemPerPage,
+                                     employeeList.size()));
+     }
 
 
    public EmployeeService employeeService(){
